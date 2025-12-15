@@ -1,0 +1,65 @@
+name: CI
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+    branches: ["**"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  basics:
+    name: Basic repo checks
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Ensure README.md exists
+        run: test -f README.md || (echo "README.md missing" && exit 1)
+
+      - name: Check for trailing whitespace
+        run: |
+          set -eo pipefail
+          tmp="$(mktemp)"
+          if git ls-files -z | xargs -0 -I{} grep -nIH --color=never '[[:space:]]$' "{}" | tee "$tmp"; then
+            if [ -s "$tmp" ]; then
+              echo "::error::Trailing whitespace found. See lines above."
+              exit 1
+            fi
+          fi
+
+      - name: Check for CRLF line endings
+        run: |
+          set -eo pipefail
+          tmp="$(mktemp)"
+          if git ls-files -z | xargs -0 -I{} grep -nIH --color=never $'\r' "{}" | tee "$tmp"; then
+            if [ -s "$tmp" ]; then
+              echo "::error::CRLF line endings found. Convert to LF."
+              exit 1
+            fi
+          fi
+
+      - name: Show file summary
+        run: |
+          echo "Files in repo:"
+          git ls-files
+          if [ -f 1984.txt ]; then echo "1984.txt word count:"; wc -w 1984.txt; fi
+
+  spellcheck:
+    name: Spellcheck (codespell)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run codespell
+        uses: codespell-project/actions-codespell@v2
+        with:
+          check_filenames: true
+          check_hidden: true
+          ignore_words_list: "nd"
+          skip: .git
