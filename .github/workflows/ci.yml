@@ -62,4 +62,4 @@ jobs:
           check_filenames: true
           check_hidden: true
           ignore_words_list: "nd"
-          skip: .git, 1984.txt
+          skip: .git,1984.txt
