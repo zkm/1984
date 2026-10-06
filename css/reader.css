@@ -1,0 +1,550 @@
+/* ==========================================================================
+   Theme tokens
+   ========================================================================== */
+
+:root {
+  --bg: #fbfaf7;
+  --panel: #ffffff;
+  --line: #e4e0d6;
+  --text: #24211d;
+  --muted: #6e675d;
+  --accent: #8c2f39;
+  --accent-soft: #f4e6e3;
+  --shadow: rgba(30, 20, 10, .18);
+
+  /* Reading size; js/prefs.js overrides this. */
+  --size: 19px;
+
+  --serif: "Literata", Georgia, serif;
+  --sans: "Source Sans 3", system-ui, sans-serif;
+}
+
+/* Dark is listed twice: once for the system setting (when the reader hasn't
+   picked a theme) and once for an explicit choice. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) {
+    --bg: #131210;
+    --panel: #1b1a17;
+    --line: #2e2b26;
+    --text: #e2ddd3;
+    --muted: #9a9386;
+    --accent: #e08a8f;
+    --accent-soft: #3a2224;
+    --shadow: rgba(0, 0, 0, .5);
+  }
+}
+
+:root[data-theme="dark"] {
+  --bg: #131210;
+  --panel: #1b1a17;
+  --line: #2e2b26;
+  --text: #e2ddd3;
+  --muted: #9a9386;
+  --accent: #e08a8f;
+  --accent-soft: #3a2224;
+  --shadow: rgba(0, 0, 0, .5);
+}
+
+:root[data-theme="sepia"] {
+  --bg: #f3e9d6;
+  --panel: #f8f0e0;
+  --line: #e0d2b8;
+  --text: #3b2f22;
+  --muted: #7a6750;
+  --accent: #8c2f39;
+  --accent-soft: #ead8c2;
+  --shadow: rgba(60, 40, 10, .2);
+}
+
+
+/* ==========================================================================
+   Base
+   ========================================================================== */
+
+* {
+  box-sizing: border-box;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font: 16px/1.5 var(--sans);
+}
+
+a {
+  color: var(--accent);
+}
+
+button {
+  font: inherit;
+  color: inherit;
+}
+
+
+/* ==========================================================================
+   Top bar
+   ========================================================================== */
+
+.bar {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 52px;
+  padding: 0 12px;
+  background: color-mix(in srgb, var(--bg) 92%, transparent);
+  backdrop-filter: blur(6px);
+  border-bottom: 1px solid var(--line);
+}
+
+.progress {
+  position: absolute;
+  left: 0;
+  bottom: -1px;
+  width: 0;
+  height: 2px;
+  background: var(--accent);
+  transition: width .2s;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-width: 36px;
+  height: 36px;
+  padding: 0 10px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--muted);
+  font-size: 14px;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.btn:hover {
+  background: var(--accent-soft);
+  color: var(--text);
+}
+
+.btn:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.btn-large {
+  font-size: 17px;
+}
+
+.where {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  color: var(--muted);
+  font-size: 14px;
+  text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.where a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.where b {
+  color: var(--text);
+  font-weight: 600;
+}
+
+
+/* ==========================================================================
+   Contents drawer
+   ========================================================================== */
+
+.scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  background: var(--shadow);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .2s;
+}
+
+.drawer {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 31;
+  display: flex;
+  flex-direction: column;
+  width: min(340px, 88vw);
+  background: var(--panel);
+  border-right: 1px solid var(--line);
+  transform: translateX(-100%);
+  transition: transform .22s ease;
+}
+
+body.toc-open .scrim {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+body.toc-open .drawer {
+  transform: none;
+  box-shadow: 0 0 40px var(--shadow);
+}
+
+.drawer header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 12px 12px 18px;
+  border-bottom: 1px solid var(--line);
+}
+
+.drawer header h2 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.drawer header h2 a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.toc {
+  overflow-y: auto;
+  padding: 6px 0 32px;
+}
+
+.toc details {
+  border-bottom: 1px solid var(--line);
+}
+
+.toc summary {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 11px 18px;
+  font-size: 15px;
+  font-weight: 600;
+  list-style: none;
+  cursor: pointer;
+}
+
+.toc summary::-webkit-details-marker {
+  display: none;
+}
+
+.toc summary span {
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 400;
+}
+
+.toc .chapters {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(44px, 1fr));
+  gap: 4px;
+  padding: 0 14px 14px;
+}
+
+.toc .chapters a {
+  display: block;
+  padding: 6px 0;
+  border-radius: 6px;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 13px;
+  text-align: center;
+  text-decoration: none;
+}
+
+.toc .chapters a:hover {
+  background: var(--accent-soft);
+}
+
+.toc .chapters a[aria-current="true"] {
+  background: var(--accent);
+  color: var(--panel);
+}
+
+
+/* ==========================================================================
+   Cover page
+   ========================================================================== */
+
+.cover {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 64px 20px 96px;
+}
+
+.cover .kicker {
+  color: var(--accent);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}
+
+.cover h1 {
+  margin: 10px 0 8px;
+  font: 600 clamp(40px, 9vw, 72px)/1.05 var(--serif);
+  letter-spacing: -.01em;
+}
+
+.cover .by {
+  margin: 0 0 28px;
+  color: var(--muted);
+  font: italic 20px var(--serif);
+}
+
+.cover .blurb {
+  max-width: 560px;
+  margin: 0 0 28px;
+  font-size: 17px;
+}
+
+.cover .stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 24px;
+  margin-bottom: 32px;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.cover h2 {
+  margin: 0 0 12px;
+  color: var(--muted);
+  font-size: 13px;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}
+
+.cta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 56px;
+}
+
+.primary,
+.secondary {
+  display: inline-flex;
+  align-items: center;
+  padding: 11px 18px;
+  border-radius: 10px;
+  text-decoration: none;
+}
+
+.primary {
+  gap: 8px;
+  background: var(--accent);
+  color: var(--panel);
+  font-weight: 600;
+}
+
+.secondary {
+  border: 1px solid var(--line);
+  color: var(--text);
+  font-weight: 500;
+}
+
+.primary:hover,
+.secondary:hover {
+  filter: brightness(1.05);
+}
+
+.parts {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 10px;
+}
+
+.parts a {
+  display: block;
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--panel);
+  color: var(--text);
+  text-decoration: none;
+}
+
+.parts a:hover {
+  border-color: var(--accent);
+}
+
+.parts b {
+  display: block;
+  font: 600 17px var(--serif);
+}
+
+.parts span {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.foot {
+  margin-top: 56px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+
+/* ==========================================================================
+   Chapter page
+   ========================================================================== */
+
+.chapter {
+  max-width: 40em;
+  margin: 0 auto;
+  padding: 48px 20px 40px;
+  font-size: var(--size);
+}
+
+.chapter .part {
+  margin: 0;
+  color: var(--accent);
+  font-family: var(--sans);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}
+
+.chapter h1 {
+  margin: .25em 0 1.2em;
+  font: 600 1.9em/1.15 var(--serif);
+}
+
+.prose {
+  font-family: var(--serif);
+  line-height: 1.7;
+  -webkit-hyphens: auto;
+  hyphens: auto;
+}
+
+.prose p {
+  margin: 0 0 1em;
+}
+
+/* Book-style paragraphs: indented, without a gap, after the first. */
+.prose p + p {
+  margin-top: -.4em;
+  text-indent: 1.4em;
+}
+
+.prose .verse {
+  margin: 1.2em 0 1.2em 1.4em;
+  font-style: italic;
+  text-indent: 0;
+  white-space: pre-line;
+}
+
+.prose .note {
+  margin: .6em 0 1.2em;
+  padding-left: .9em;
+  border-left: 2px solid var(--line);
+  color: var(--muted);
+  font-size: .82em;
+  text-indent: 0;
+}
+
+.prose .note + p,
+.prose .verse + p {
+  margin-top: 0;
+  text-indent: 0;
+}
+
+.nav {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  max-width: 40em;
+  margin: 0 auto;
+  padding: 8px 20px 80px;
+}
+
+.nav a {
+  display: block;
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--panel);
+  color: var(--text);
+  text-decoration: none;
+}
+
+.nav a:hover {
+  border-color: var(--accent);
+}
+
+.nav small {
+  display: block;
+  color: var(--muted);
+  font-size: 12px;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.nav .next {
+  grid-column: 2;
+  text-align: right;
+}
+
+
+/* ==========================================================================
+   Status messages (loading, errors)
+   ========================================================================== */
+
+.status {
+  max-width: 40em;
+  margin: 0 auto;
+  padding: 80px 20px;
+  color: var(--muted);
+  text-align: center;
+}
+
+
+/* ==========================================================================
+   Responsive and print
+   ========================================================================== */
+
+@media (max-width: 560px) {
+  .btn .label {
+    display: none;
+  }
+
+  .chapter {
+    padding-top: 32px;
+  }
+}
+
+@media print {
+  .bar,
+  .drawer,
+  .scrim,
+  .nav {
+    display: none !important;
+  }
+}
