@@ -98,12 +98,12 @@ export function coverHtml(book, resume) {
 
   return `
     <section class="cover">
-      <div class="kicker">An “americanized” edition</div>
+      <div class="kicker">A novel, 1949</div>
       <h1>${escapeHtml(book.title)}</h1>
       <p class="by">${escapeHtml(book.author)}</p>
       <p class="blurb">
-        Tolstoy’s novel of Russia during the Napoleonic wars, with a few “enhancements” of our own.
-        Pick up where you left off, or start in a Petersburg drawing room in July 1805.
+        Orwell’s novel of Winston Smith, the Party and Big Brother.
+        Pick up where you left off, or start on a bright cold day in April.
       </p>
 
       <div class="stats">
@@ -119,8 +119,7 @@ export function coverHtml(book, resume) {
       <div class="parts">${book.parts.map(partCardHtml).join('')}</div>
 
       <p class="foot">
-        Text from the Project Gutenberg edition of the Louise and Aylmer Maude translation,
-        edited in <a href="https://github.com/${REPO}">${REPO}</a>. Public domain in the U.S.
+        Text from <a href="https://github.com/${REPO}">${REPO}</a>.
       </p>
     </section>`;
 }

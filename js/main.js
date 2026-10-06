@@ -11,7 +11,7 @@ import { parseBook } from './book.js';
 import { chapterHref, chapterHtml, coverHtml, escapeHtml, shortTitle } from './views.js';
 import { initToc, markCurrentChapter, renderToc, setTocOpen, toggleToc } from './toc.js';
 
-const DEFAULT_TITLE = 'War and Peace Reader';
+const DEFAULT_TITLE = 'Nineteen Eighty-Four Reader';
 const CHAPTER_ROUTE = /^#\/(\d+)\/(\d+)$/;
 
 const app = document.getElementById('app');

@@ -1,4 +1,7 @@
-// Parses the Project Gutenberg plain text into parts and chapters.
+// Parses 1984.txt into parts and chapters.
+//
+// The text marks each part with a "* Chapter One *" heading and separates the
+// chapters inside a part with "x x x" lines. The appendix is its own part.
 //
 // Returned shape:
 //   {
@@ -7,10 +10,14 @@
 //     chapters: [chapter, ...]   // every chapter in reading order
 //   }
 //   chapter = { numeral, lines, partIndex, indexInPart, index, words, wordsBefore }
+//
+// `years` is the part's subtitle (only the appendix has one).
 
-const PART_HEADING = /^(BOOK [A-Z]+|FIRST EPILOGUE|SECOND EPILOGUE)(?::\s*(.*?))?\s*$/;
-const CHAPTER_HEADING = /^CHAPTER ([IVXLC]+|\d+)\s*$/;
-const GUTENBERG_FOOTER = /^End of (the )?Project Gutenberg|^\*\*\* ?END OF/i;
+import { BOOK_AUTHOR, BOOK_TITLE } from './config.js';
+
+const PART_HEADING = /^\* Chapter (One|Two|Three) \*$/;
+const APPENDIX_HEADING = /^\* APPENDIX\. (.+?) \*$/;
+const CHAPTER_BREAK = /^x x x$/;
 
 const ROMAN_NUMERALS = [
   [1000, 'M'], [900, 'CM'], [500, 'D'], [400, 'CD'],
@@ -29,45 +36,46 @@ function toRoman(n) {
   return result;
 }
 
-function titleCase(s) {
-  return s.toLowerCase().replace(/\b[a-z]/g, (c) => c.toUpperCase());
-}
-
 function countWords(lines) {
   return lines.join(' ').split(/\s+/).filter(Boolean).length;
 }
 
-// Drops the Project Gutenberg license text at the end, if present.
-function stripFooter(lines) {
-  const end = lines.findIndex((line) => GUTENBERG_FOOTER.test(line));
-  return end === -1 ? lines : lines.slice(0, end);
-}
-
-// Groups lines into parts and chapters. Anything before the first chapter
+// Groups lines into parts and chapters. Anything before the first part
 // heading (the front matter) is skipped.
 function splitParts(lines) {
   const parts = [];
   let part = null;
   let chapter = null;
 
+  function startPart(name, years = '') {
+    part = { name, years, chapters: [] };
+    parts.push(part);
+    startChapter();
+  }
+
+  function startChapter() {
+    chapter = { numeral: toRoman(part.chapters.length + 1), lines: [] };
+    part.chapters.push(chapter);
+  }
+
   for (const line of lines) {
-    const partMatch = line.match(PART_HEADING);
+    const text = line.trim();
+
+    const partMatch = text.match(PART_HEADING);
     if (partMatch) {
-      part = {
-        name: titleCase(partMatch[1]),
-        years: (partMatch[2] || '').replace(/\s*-\s*/g, '–'),
-        chapters: [],
-      };
-      parts.push(part);
-      chapter = null;
+      startPart(`Part ${partMatch[1]}`);
       continue;
     }
 
-    const chapterMatch = part && line.match(CHAPTER_HEADING);
-    if (chapterMatch) {
-      const label = chapterMatch[1];
-      chapter = { numeral: /^\d+$/.test(label) ? toRoman(Number(label)) : label, lines: [] };
-      part.chapters.push(chapter);
+    const appendixMatch = text.match(APPENDIX_HEADING);
+    if (appendixMatch) {
+      startPart('Appendix', appendixMatch[1]);
+      continue;
+    }
+
+    if (part && CHAPTER_BREAK.test(text)) {
+      // A break right after a part heading would otherwise open an empty chapter.
+      if (chapter.lines.some((l) => l.trim())) startChapter();
       continue;
     }
 
@@ -78,8 +86,7 @@ function splitParts(lines) {
 }
 
 export function parseBook(text) {
-  const lines = stripFooter(text.replace(/\r\n?/g, '\n').split('\n'));
-  const [title, byline] = lines.filter((line) => line.trim()).slice(0, 2);
+  const lines = text.replace(/^﻿/, '').replace(/\r\n?/g, '\n').split('\n');
   const parts = splitParts(lines);
 
   // Flatten into reading order and record where each chapter sits.
@@ -97,11 +104,5 @@ export function parseBook(text) {
     });
   });
 
-  return {
-    title: title || 'War and Peace',
-    author: (byline || '').replace(/^By\s+/i, ''),
-    parts,
-    chapters,
-    words,
-  };
+  return { title: BOOK_TITLE, author: BOOK_AUTHOR, parts, chapters, words };
 }
