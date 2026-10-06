@@ -1,4 +1,5 @@
 # Nineteen Eighty-Four reader
 
-This branch holds a GitHub Pages reader that opens a copy of the book from
-the reader's own device. The page contains no book text and uploads nothing.
+This branch holds a GitHub Pages reader for the book. It fetches `1984.txt`
+from the `master` branch, splits it into parts and chapters, and remembers
+your place, theme and text size in your browser.
